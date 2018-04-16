@@ -40,12 +40,19 @@ private:
 
 public:
 	Chess();
+	// return the current board status
 	const std::vector<std::vector<int>>& getBoard() const;
+	// return the position of the knight
 	const std::pair<int, int>& getKnight() const;
+	// reset the board and the knight and place the knight
+	// to the ordered position
 	void reset(const std::pair<int, int>& knightPosition);
+	// move the knight to the next position, return true
+	// if succeeded, else return false
 	bool next();
 };
 
+// Controller of the scene
 class ChessController : public QObject
 {
 	Q_OBJECT
@@ -57,12 +64,19 @@ protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+	// draw the order of every movement the knight has done
 	void drawOrder();
+	// draw the knight as a circle
 	void drawKnight();
+	// refresh the scene
 	void redrawAll();
+	// reset the knight and clean the board
 	void chessReset(const std::pair<int, int>& position);
+	// move the knight to the next position
 	void chessNext();
+	// move the knight until the traversal is finished
 	void chessFinish();
+	// handle the mouse click event
 	void handleMouseClicked(QGraphicsSceneMouseEvent* event);
 	QGraphicsScene& scene;
 	Chess *chess;

@@ -33,6 +33,8 @@ void ChessKnight::initSceneBackground()
 	p.setBrush(QBrush(Qt::lightGray));
 	p.drawRect(0, BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 	p.drawRect(BLOCK_SIZE, 0, BLOCK_SIZE, BLOCK_SIZE);
+	// fill the background of the view with the brush
+	// to make it look like a chess board
 	view->setBackgroundBrush(QBrush(bg));
 }
 
@@ -48,19 +50,23 @@ Chess::Chess() : currentKnight(0, 1)
 void Chess::reset(const std::pair<int, int>& knightPosition)
 {
 	this->currentKnight = knightPosition;
+	// set every block to be 0
 	for(auto i = 0; i < 8; i++)
 		for(auto j = 0; j < 8; j++)
 			this->board[i][j] = 0;
+	// set the block where the knight is to be 1
 	this->board[knightPosition.first][knightPosition.second] = 1;
 }
 
 std::vector<std::pair<int, int>> Chess::getExits(const std::pair<int, int>& position) const
 {
 	std::vector<std::pair<int, int>> exits;
+	// try every possible exit
 	for (auto i : dir)
 	{
 		const int row = position.first + i[0];
 		const int col = position.second + i[1];
+		// test whether the exit is within the board
 		if (row >= 0 && row < 8 && col >= 0 && col < 8 && this->board[row][col] == 0)
 			exits.emplace_back(row, col);
 	}
@@ -70,10 +76,13 @@ std::vector<std::pair<int, int>> Chess::getExits(const std::pair<int, int>& posi
 bool Chess::next()
 {
 	auto min = SIZE_MAX;
+	// get the current order
 	const auto order = this->board[this->currentKnight.first][this->currentKnight.second];
+	// get valid exits
 	auto exitsOfPresent = this->getExits(this->currentKnight);
 	if (exitsOfPresent.empty())
 		return false;
+	// select the exit with minimum exits
 	for (const auto& exit : exitsOfPresent)
 	{
 		const auto temp = this->getExits(exit).size();
@@ -83,6 +92,7 @@ bool Chess::next()
 			this->currentKnight = exit;
 		}
 	}
+	// set the block with the new order
 	this->board[this->currentKnight.first][this->currentKnight.second] = order + 1;
 	return true;
 }
@@ -99,13 +109,17 @@ const std::pair<int, int>& Chess::getKnight() const
 
 ChessController::ChessController(QGraphicsScene& scene, QObject* parent) : scene(scene)
 {
+	// create a new chess object
 	this->chess = new Chess();
+	// scene refreshed
 	this->redrawAll();
+	// initialize the event filter
 	this->scene.installEventFilter(this);
 }
 
 ChessController::~ChessController()
 {
+	// deconstruct the chess object
 	free(this->chess);
 }
 
@@ -117,7 +131,8 @@ void ChessController::chessReset(const std::pair<int, int>& position)
 
 void ChessController::chessNext()
 {
-	if(!this->chess->next()) // failed to continue
+	// failed to continue
+	if(!this->chess->next())
 	{
 		QMessageBox::warning(Q_NULLPTR, QString("Warning!"), QString("Can not move!"));
 	}
@@ -129,7 +144,8 @@ void ChessController::chessNext()
 
 void ChessController::chessFinish()
 {
-	if (!this->chess->next()) // failed to continue
+	// failed to continue
+	if (!this->chess->next())
 	{
 		QMessageBox::warning(Q_NULLPTR, QString("Warning!"), QString("Can not move!"));
 	}
@@ -161,6 +177,7 @@ void ChessController::handleMouseClicked(QGraphicsSceneMouseEvent* event)
 	}
 	else if(event->button() == Qt::RightButton)
 	{
+		// find which block the mouse clicked
 		const auto x = event->scenePos().x();
 		const auto y = event->scenePos().y();
 		this->chessReset(std::pair<int, int>(static_cast<int>(y) / BLOCK_SIZE, static_cast<int>(x) / BLOCK_SIZE));
@@ -213,6 +230,7 @@ QRectF Knight::boundingRect() const
 void Knight::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->save();
+	// set high quality painter
 	painter->setRenderHint(QPainter::Antialiasing);
 	painter->fillPath(this->shape(), Qt::darkCyan);
 	painter->restore();
@@ -239,6 +257,7 @@ QRectF Order::boundingRect() const
 void Order::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->save();
+	// set high quality painter
 	painter->setRenderHint(QPainter::Antialiasing);
 	painter->drawText(BLOCK_SIZE / 2 - 5, BLOCK_SIZE / 2 + 5, this->orderNo);
 	painter->restore();
